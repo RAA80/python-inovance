@@ -1,0 +1,35 @@
+#! /usr/bin/env python3
+
+import argparse
+import logging
+
+from inovance.client import Client
+from inovance.device import MD520
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Inovance MD520 command-line option")
+
+    parser.add_argument("--address", type=str, required=True,
+                                     help="device IP-address")
+    parser_ex = parser.add_mutually_exclusive_group()
+    parser_ex.add_argument("--get", type=str, nargs=1, metavar=("KEY"),
+                                    help="read KEY value (key example: F0-00)")
+    parser_ex.add_argument("--set", type=str, nargs=2, metavar=("KEY", "VALUE"),
+                                    help="write KEY value")
+    parser.add_argument("--debug", action="store_true",
+                                   help="print debug information")
+    args = parser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    if args.address:
+        client = Client(host=args.address, device=MD520)
+
+    if args.get:
+        value = client.get_param(name=args.get[0])
+        print(f"{args.get[0]} = {value}")
+
+    if args.set:
+        value = client.set_param(name=args.set[0], value=float(args.set[1]))
+        print(f"{args.set[0]} = {value}")
