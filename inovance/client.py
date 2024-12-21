@@ -7,6 +7,8 @@ from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 from pymodbus.pdu import ModbusResponse
 
+from .device import INOVANCE_DEVICE, INOVANCE_PARAMS
+
 
 class InovanceError(Exception):
     pass
@@ -15,12 +17,13 @@ class InovanceError(Exception):
 class Client:
     """Класс клиента для управления приводом переменного тока."""
 
-    def __init__(self, host: str, device: dict) -> None:
+    def __init__(self, host: str, device: INOVANCE_DEVICE) -> None:
         """Инициализация класса клиента с указанными параметрами."""
 
         self.socket = ModbusTcpClient(host=host, retry_on_empty=True)
         self.socket.connect()
 
+        self.host = host
         self.device = device
 
     def __del__(self) -> None:
@@ -32,7 +35,7 @@ class Client:
     def __repr__(self) -> str:
         """Строковое представление объекта."""
 
-        return f"{type(self).__name__}(socket={self.socket})"
+        return f"{type(self).__name__}(host={self.host!r})"
 
     @staticmethod
     def _check_error(retcode: ModbusResponse) -> bool:
@@ -42,7 +45,7 @@ class Client:
             raise InovanceError(retcode)
         return True
 
-    def _check_name(self, name: str) -> dict:
+    def _check_name(self, name: str) -> INOVANCE_PARAMS:
         """Проверка названия параметра."""
 
         name = name.upper()
